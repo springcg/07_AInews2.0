@@ -1,24 +1,21 @@
-# 项目依赖列表（可根据后续实际使用再补充）
+# 项目依赖列表（根据代码实际使用自动整理）
 # 中文说明：本文件用于列出运行项目所需的第三方库
 
-# HTTP 请求，用于访问微信等外部 API
+# HTTP 请求 & 微信/PushPlus API
 requests
 
-# 配置管理，使用 .env 或环境变量
-pydantic-settings
+# 配置管理（.env / 环境变量）
 pydantic
+pydantic-settings
 
-#处理 RSS
+# RSS 解析
 feedparser
 
-#AI
+# OpenAI 兼容 SDK（用于调用 DeepSeek）
 openai
 
-#time
-timezone
-
-#markdown->HTML
+# Markdown 转 HTML（用于生成公众号内容）
 markdown
 
-#styler.py
-re
+# 说明：
+# - 标准库模块（如 time / datetime / json / re / concurrent.futures 等）不需要写入 requirements.txt
