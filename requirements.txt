@@ -1,0 +1,18 @@
+# 项目依赖列表（可根据后续实际使用再补充）
+# 中文说明：本文件用于列出运行项目所需的第三方库
+
+# HTTP 请求，用于访问微信等外部 API
+requests
+
+# 配置管理，使用 .env 或环境变量
+pydantic-settings
+pydantic
+
+#处理 RSS
+feedparser
+
+#AI
+openai
+
+#time
+timezone

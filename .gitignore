@@ -1,0 +1,5 @@
+.venv/
+.env
+__pycache__/
+z_ai_coding_demand.md
+z_new_requirements.md
