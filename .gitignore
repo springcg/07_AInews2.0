@@ -1,5 +1,9 @@
+# 虚拟环境
 .venv/
+
+# Key配置
 .env
+wechat_token.json
+
+# 运行时文件
 __pycache__/
-z_ai_coding_demand.md
-z_new_requirements.md
