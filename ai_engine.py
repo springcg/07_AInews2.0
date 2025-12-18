@@ -66,7 +66,7 @@ def fetch_single_feed(feed):
                 entries.append(f"- 来源: {feed['name']}\n  标题: {title}\n  链接: {link}\n  摘要: {summary}\n")
                 
                 # 每个源最多取前 5 条，防止单个源刷屏
-                if len(entries) >= 5:
+                if len(entries) >= 10:
                     break
         return entries
     except Exception as e:

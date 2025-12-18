@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     WECHAT_APPID: str
     WECHAT_APPSECRET: str
     PUSHPLUS_TOKEN: str
+    PUSHPLUS_COVER_URL: str | None = None
     
     # 如果有不需要强校验或有默认值的配置，可以这样写：
     # debug_mode: bool = False

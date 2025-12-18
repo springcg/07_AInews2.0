@@ -60,6 +60,9 @@ class WeChatStyler:
         html_content = re.sub(r'<nav>', f'<div style="{cls._clean(cls.STYLE_META)}">', html_content)
         html_content = re.sub(r'</nav>', '</div>', html_content)
         html_content = re.sub(r'<a href=', f'<a style="{cls._clean(cls.STYLE_LINK)}" href=', html_content)
+
+        html_content = html_content.strip()
+        html_content = re.sub(r'>\s+<', '><', html_content)
         
         return f'<div style="{cls._clean(cls.STYLE_WRAPPER)}">{html_content}</div>'
 

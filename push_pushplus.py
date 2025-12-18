@@ -1,4 +1,7 @@
 import requests
+import os
+import base64
+import io
 from datetime import date
 from config import settings  # 导入配置中心
 
@@ -24,6 +27,48 @@ def format_to_markdown(data):
     md += f"> *Generated Sun's Workflow | {date.today()}*"
     return md
 
+def _build_cover_block(image_path: str = "cover.jpg") -> str:
+    cover_url = (settings.PUSHPLUS_COVER_URL or "").strip()
+    if cover_url:
+        return f'<p><img src="{cover_url}" style="max-width:100%;height:auto;" /></p>\n\n'
+
+    if not os.path.exists(image_path):
+        return ""
+
+    try:
+        file_size = os.path.getsize(image_path)
+        max_bytes = 500 * 1024
+        if file_size > max_bytes:
+            try:
+                from PIL import Image  # pyright: ignore[reportMissingImports]
+            except Exception:
+                print(
+                    f"⚠️ cover.jpg 体积过大({file_size/1024:.0f}KB)，PushPlus 已跳过封面；"
+                    f"可设置 PUSHPLUS_COVER_URL 为公网图片链接，或安装 pillow 后自动压缩。"
+                )
+                return ""
+
+            with Image.open(image_path) as image:
+                image = image.convert("RGB")
+                max_width = 720
+                if image.width > max_width:
+                    new_height = int(image.height * (max_width / image.width))
+                    image = image.resize((max_width, new_height))
+                buf = io.BytesIO()
+                image.save(buf, format="JPEG", quality=70, optimize=True)
+                jpg_bytes = buf.getvalue()
+        else:
+            with open(image_path, "rb") as f:
+                jpg_bytes = f.read()
+
+        b64 = base64.b64encode(jpg_bytes).decode("ascii")
+        return (
+            f'<p><img src="data:image/jpeg;base64,{b64}" style="max-width:100%;height:auto;" /></p>\n\n'
+        )
+    except Exception as e:
+        print(f"⚠️ 处理 PushPlus 封面图失败，已跳过: {e}")
+        return ""
+
 def send_pushplus(ai_data):
     """
     通过 PushPlus 推送消息。
@@ -37,7 +82,7 @@ def send_pushplus(ai_data):
     print("🚀 正在构造 Markdown 样式并推送...")
     
     # --- 关键修改：将字典转回 Markdown 字符串 ---
-    content_md = format_to_markdown(ai_data)
+    content_md = _build_cover_block() + format_to_markdown(ai_data)
     
     url = "http://www.pushplus.plus/send"
     

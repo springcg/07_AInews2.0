@@ -14,28 +14,24 @@ from styler import WeChatStyler
 # main.py
 
 def dict_to_html(data):
-    """
-    紧凑型 HTML 结构：删除冗余空格，合并元数据
-    """
-    # 1. 顶部风向标 (使用 aside 对应紧凑样式)
-    html_out = f"""<aside>
-        <strong>💡 今日风向标：</strong>{data.get('daily_summary', '')}
-    </aside>"""
-    # 2. 文章列表
-    for i, item in enumerate(data.get('articles', []), 1):
-        # 将 技术突破 和 机器之心 放在同一个 <nav> 标签内以实现同行显示
-        source = item.get('source', '未知')
-        category = item.get('type', '动态')
-        
-        html_out += f"""<section>
-            <h2 style="font-size:17px; margin:0 0 5px 0;">{i}. {item.get('title', '')}</h2>
-            <nav>来源：{source} | 类别：{category}</nav>
-            <p style="font-size:14px; color:#444; margin:5px 0;">{item.get('description', '')}</p>
-            <div style="text-align: right;">
-                <a href="{item.get('link', '#')}">阅读原文 →</a>
-            </div>
-        </section>"""
-    return html_out
+    parts = []
+    parts.append(
+        f"<aside><strong>💡 今日风向标：</strong>{data.get('daily_summary', '')}</aside>"
+    )
+
+    for i, item in enumerate(data.get("articles", []), 1):
+        source = item.get("source", "未知")
+        category = item.get("type", "动态")
+        parts.append(
+            f"<section>"
+            f'<h2 style="font-size:17px; margin:0 0 5px 0;">{i}. {item.get("title", "")}</h2>'
+            f"<nav>来源：{source} | 类别：{category}</nav>"
+            f'<p style="font-size:14px; color:#444; margin:5px 0;">{item.get("description", "")}</p>'
+            f'<div style="text-align: right;"><a href="{item.get("link", "#")}">阅读原文 →</a></div>'
+            f"</section>"
+        )
+
+    return "".join(parts)
 
 # 后面保持 main() 函数中对 WeChatStyler.beautify(raw_html) 的调用即可
 
@@ -71,10 +67,8 @@ def main():
         print("🎨 正在进行排版美化...")
         styled_content = WeChatStyler.beautify(raw_html)
         
-        # 4.3 添加底部的版权声明
-        final_content = f"""
-        {styled_content}
-        """
+        # 4.3 最终内容：避免三引号带来的多余换行/缩进
+        final_content = styled_content.strip()
         
         # 4.4 上传封面图 (保持不变，确保目录下有 cover.jpg)
         media_id = wechat_client.upload_cover_image("cover.jpg")
