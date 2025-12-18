@@ -38,4 +38,4 @@ jobs:
           WECHAT_APPSECRET: ${{ secrets.WECHAT_APPSECRET || 'dummy' }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN || 'dummy' }}
         run: |
-          python -c "import main, ai_engine, push_pushplus, push_wechat, styler; print('imports ok')"
+          python main.py
