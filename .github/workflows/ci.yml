@@ -33,9 +33,9 @@ jobs:
 
       - name: Import smoke test
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || 'dummy' }}
+          DEEPSEEK_API_KEY: ${{ secrets.LLM_API_KEY || 'dummy' }}
           WECHAT_APPID: ${{ secrets.WECHAT_APPID || 'dummy' }}
           WECHAT_APPSECRET: ${{ secrets.WECHAT_APPSECRET || 'dummy' }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN || 'dummy' }}
         run: |
-          python -c "import main, ai_engine, push_pushplus, push_wechat, styler; print('imports ok')"
+          python main.py
