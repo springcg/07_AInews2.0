@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from concurrent.futures import ThreadPoolExecutor
 from openai import OpenAI
 from config import settings  # 导入你的配置中心
+import json
 
 # --- 1. 配置区域 ---
 # DeepSeek API 配置
@@ -13,15 +14,17 @@ MODEL_NAME = "deepseek-chat"
 API_BASE_URL = "https://api.deepseek.com"
 
 # RSS 数据源列表
+# ai_engine.py
+
+# RSS 数据源列表：已去除国外源，替换为中文高质量科技媒体
 RSS_FEEDS = [
-    # --- 综合新闻 ---
     {"name": "机器之心", "url": "https://www.jiqizhixin.com/rss"},
-    {"name": "Hacker News (AI)", "url": "https://hnrss.org/newest?q=AI"},
-    # --- 官方技术博客 ---
-    {"name": "OpenAI Blog", "url": "https://openai.com/blog/rss.xml"},
-    {"name": "Google DeepMind", "url": "https://deepmind.google/blog/rss.xml"},
-    {"name": "Hugging Face", "url": "https://huggingface.co/blog/feed.xml"},
-    {"name": "Microsoft Research", "url": "https://www.microsoft.com/en-us/research/feed/"},
+    # {"name": "36氪 - AI专栏", "url": "https://rsshub.app/36kr/newsflashes"},
+    # {"name": "极客公园", "url": "https://www.geekpark.net/rss"},
+    # {"name": "APPSO (爱范儿)", "url": "https://www.ifanr.com/app/feed"},
+    # {"name": "AI前线 (InfoQ)", "url": "https://rsshub.app/infoq/topic/131"},
+    # # 额外补充一个高质量源，防止部分源临时失效
+    # {"name": "钛媒体 - AI专题", "url": "https://rsshub.app/tmtpost/column/234"}
 ]
 
 def clean_html(raw_html):
@@ -83,60 +86,51 @@ def get_aggregated_news():
     return "\n".join(all_content)
 
 def summarize_with_ai(content):
-    """调用 DeepSeek 进行筛选和总结"""
     if not content.strip():
-        print("⚠️ 过去 24 小时没有检测到重要更新。")
         return None
 
-    print(f"🤖 正在调用 DeepSeek 进行总结 (原始内容长度: {len(content)} 字符)...")
+    print(f"🤖 正在调用 DeepSeek 进行总结 (JSON 模式)...")
     
-    # 初始化 OpenAI 客户端 (DeepSeek 兼容 OpenAI SDK)
-    client = OpenAI(
-        api_key=settings.DEEPSEEK_API_KEY, 
-        base_url=API_BASE_URL
-    )
+    client = OpenAI(api_key=settings.DEEPSEEK_API_KEY, base_url=API_BASE_URL)
 
+    # 修改 Prompt，明确 JSON 结构
     prompt = f"""
-    你是 DeepSeek 驱动的首席AI科技编辑。请从以下 RSS 数据中筛选出最重要的 8-10 条信息，生成一份“每日AI早报”，按照重要程度降序排序,不需要对筛选进行反馈。
+    请从以下 RSS 数据中筛选出最重要的 15-20 条 AI 行业信息，并严格以 JSON 格式输出。
+    
+    JSON 结构要求：
+    {{
+        "daily_summary": "一句话总结今日行业趋势",
+        "articles": [
+            {{
+                "title": "新闻标题",
+                "source": "来源名称",
+                "type": "技术突破/开源/行业动态",
+                "description": "核心内容解读（中文，一句话说明重要性）",
+                "link": "原文链接URL"
+            }}
+        ]
+    }}
 
-    【筛选标准 - 请基于以下维度评估，不重要的直接丢弃】：
-    1. **技术突破**：SOTA模型发布、架构创新、性能大幅提升。
-    2. **开源生态**：知名项目（如Llama, LangChain）的重大更新。
-    3. **行业风向**：OpenAI/Google等巨头的战略动作。
-    4. **过滤垃圾**：忽略纯营销软文、微小的Bug修复。
-
-    【输入数据】：
+    【待处理数据】：
     {content}
-
-    【输出格式要求 (Markdown)】：
-    ## 🌪 行业风向标
-    > [一句话总结今天的整体技术或市场趋势]
-
-    ---
-
-    ### 核心速览
-    #### 1. [新闻标题](按照新闻重要性降序排序)
-    - **来源**: [来源名称]
-    - **类型**: [技术突破/开源/行业动态]
-    - **深度解读**: [用中文简述核心内容，并一句话说明它为什么重要]
-    - [🔗 原文链接](URL)
-
-    (依次列出8-10条...)
     """
 
     try:
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.3, # 降低随机性，让筛选更严谨
+            temperature=0.3,
+            # 如果是 DeepSeek 或 OpenAI 较新模型，建议开启 json_object 模式
+            response_format={"type": "json_object"}, 
             stream=False
         )
-        result = response.choices[0].message.content
-        print("✅ AI 总结完成！")
-        return result
+        
+        # 解析返回的 JSON 字符串为 Python 字典
+        raw_json = response.choices[0].message.content
+        return json.loads(raw_json)
         
     except Exception as e:
-        print(f"❌ 调用 DeepSeek 失败: {e}")
+        print(f"❌ 调用 DeepSeek 失败或 JSON 解析错误: {e}")
         return None
 
 # --- 主函数用于测试 ---

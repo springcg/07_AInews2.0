@@ -7,3 +7,9 @@ wechat_token.json
 
 # 运行时文件
 __pycache__/
+
+#cursor文件
+.cursor/
+
+#wechat_access_token
+wechat_access_token
