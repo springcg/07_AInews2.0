@@ -119,29 +119,24 @@ class WeChatClient:
             print(f"❌ 上传过程出错: {e}")
             raise
 
-    def add_draft(self, title, content, thumb_media_id):
-        """
-        新建草稿 (Draft)
-        """
+    def add_draft(self, title, content, thumb_media_id, digest=None): # 增加 digest 参数
         token = self.get_access_token()
         url = f"https://api.weixin.qq.com/cgi-bin/draft/add?access_token={token}"
         
-        # 构造图文消息结构
         article_payload = {
             "articles": [
                 {
                     "title": title,
                     "author": "AI助手",
-                    "digest": "这是AI自动生成的摘要...", # 选填，卡片上显示的小字
-                    "content": content,       # 支持 HTML
-                    "content_source_url": "", # 阅读原文链接
-                    "thumb_media_id": thumb_media_id, # 必须提供封面ID
+                    "digest": digest or "今日AI要闻汇总", # 优先使用传入的摘要
+                    "content": content,
+                    "thumb_media_id": thumb_media_id,
                     "need_open_comment": 0,
                     "only_fans_can_comment": 0
                 }
             ]
         }
-        
+
         # 发送请求 (注意处理中文编码)
         resp = requests.post(
             url, 
