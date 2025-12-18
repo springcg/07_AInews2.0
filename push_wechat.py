@@ -127,7 +127,7 @@ class WeChatClient:
             "articles": [
                 {
                     "title": title,
-                    "author": "AI助手",
+                    "author": "SunSpring",
                     "digest": digest or "今日AI要闻汇总", # 优先使用传入的摘要
                     "content": content,
                     "thumb_media_id": thumb_media_id,

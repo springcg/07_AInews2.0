@@ -9,40 +9,35 @@ from styler import WeChatStyler
 
 # main.py
 
+# main.py (部分代码修改)
+
+# main.py
+
 def dict_to_html(data):
     """
-    构建结构清晰的 HTML：标题 -> 信息栏 -> 摘要 -> 链接
+    紧凑型 HTML 结构：删除冗余空格，合并元数据
     """
-    # 1. 顶部导读：简单加粗，不加过多边框
-    html_out = f"""
-    <div style="margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #eee;">
-        <p><strong>💡 今日风向标</strong></p>
-        <p style="color: #555;">{data.get('daily_summary', '')}</p>
-    </div>
-    """
-
-    # 2. 遍历文章列表
+    # 1. 顶部风向标 (使用 aside 对应紧凑样式)
+    html_out = f"""<aside>
+        <strong>💡 今日风向标：</strong>{data.get('daily_summary', '')}
+    </aside>"""
+    # 2. 文章列表
     for i, item in enumerate(data.get('articles', []), 1):
-        html_out += f"""
-        <section style="margin-bottom: 35px;">
-            <h2 style="font-size: 18px; font-weight: bold; color: #000; margin-bottom: 8px;">
-                {i}. {item.get('title', '')}
-            </h2>
-            
-            <p style="font-size: 13px; color: #888; margin-bottom: 10px;">
-                来源：{item.get('source', '未知')} | 类别：{item.get('type', '动态')}
-            </p>
-            
-            <blockquote>
-                {item.get('description', '')}
-            </blockquote>
-            
-            <p style="text-align: right; font-size: 13px;">
-                <a href="{item.get('link', '#')}">查看原文 →</a>
-            </p>
-        </section>
-        """
+        # 将 技术突破 和 机器之心 放在同一个 <nav> 标签内以实现同行显示
+        source = item.get('source', '未知')
+        category = item.get('type', '动态')
+        
+        html_out += f"""<section>
+            <h2 style="font-size:17px; margin:0 0 5px 0;">{i}. {item.get('title', '')}</h2>
+            <nav>来源：{source} | 类别：{category}</nav>
+            <p style="font-size:14px; color:#444; margin:5px 0;">{item.get('description', '')}</p>
+            <div style="text-align: right;">
+                <a href="{item.get('link', '#')}">阅读原文 →</a>
+            </div>
+        </section>"""
     return html_out
+
+# 后面保持 main() 函数中对 WeChatStyler.beautify(raw_html) 的调用即可
 
 def main():
     print("🚀 === AI 每日新闻任务启动 (JSON 模式) ===")
@@ -64,7 +59,7 @@ def main():
     # --- 第三步：推送到 PushPlus (现在会自动格式化) ---
     print("\n2️⃣ 正在通过 PushPlus 推送消息...")
     # 直接把 AI 返回的字典传进去即可
-    # send_pushplus(ai_data)
+    send_pushplus(ai_data)
     
     # --- 第四步：推送到微信公众号草稿箱 ---
     print("\n3️⃣ 正在生成公众号排版并推送到草稿箱...")

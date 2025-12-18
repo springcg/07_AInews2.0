@@ -19,12 +19,12 @@ API_BASE_URL = "https://api.deepseek.com"
 # RSS 数据源列表：已去除国外源，替换为中文高质量科技媒体
 RSS_FEEDS = [
     {"name": "机器之心", "url": "https://www.jiqizhixin.com/rss"},
-    # {"name": "36氪 - AI专栏", "url": "https://rsshub.app/36kr/newsflashes"},
-    # {"name": "极客公园", "url": "https://www.geekpark.net/rss"},
-    # {"name": "APPSO (爱范儿)", "url": "https://www.ifanr.com/app/feed"},
-    # {"name": "AI前线 (InfoQ)", "url": "https://rsshub.app/infoq/topic/131"},
-    # # 额外补充一个高质量源，防止部分源临时失效
-    # {"name": "钛媒体 - AI专题", "url": "https://rsshub.app/tmtpost/column/234"}
+    {"name": "36氪 - AI专栏", "url": "https://rsshub.app/36kr/newsflashes"},
+    {"name": "极客公园", "url": "https://www.geekpark.net/rss"},
+    {"name": "APPSO (爱范儿)", "url": "https://www.ifanr.com/app/feed"},
+    {"name": "AI前线 (InfoQ)", "url": "https://rsshub.app/infoq/topic/131"},
+    # 额外补充一个高质量源，防止部分源临时失效
+    {"name": "钛媒体 - AI专题", "url": "https://rsshub.app/tmtpost/column/234"}
 ]
 
 def clean_html(raw_html):
@@ -105,7 +105,7 @@ def summarize_with_ai(content):
                 "title": "新闻标题",
                 "source": "来源名称",
                 "type": "技术突破/开源/行业动态",
-                "description": "核心内容解读（中文，一句话说明重要性）",
+                "description": "核心内容解读（中文，一百字左右说明重要性）",
                 "link": "原文链接URL"
             }}
         ]
