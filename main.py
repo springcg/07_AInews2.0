@@ -27,7 +27,8 @@ def dict_to_html(data):
             f'<h2 style="font-size:17px; margin:0 0 5px 0;">{i}. {item.get("title", "")}</h2>'
             f"<nav>来源：{source} | 类别：{category}</nav>"
             f'<p style="font-size:14px; color:#444; margin:5px 0;">{item.get("description", "")}</p>'
-            f'<div style="text-align: right;"><a href="{item.get("link", "#")}">阅读原文 →</a></div>'
+            # 现在没有微信公众附带超链接权限
+            # f'<div style="text-align: right;"><a href="{item.get("link", "#")}">阅读原文 →</a></div>'
             f"</section>"
         )
 
@@ -57,35 +58,35 @@ def main():
     # 直接把 AI 返回的字典传进去即可
     send_pushplus(ai_data)
     
-    # --- 第四步：推送到微信公众号草稿箱 ---
-    print("\n3️⃣ 正在生成公众号排版并推送到草稿箱...")
-    try:
-        # 4.1 将 JSON 字典转成原始 HTML
-        raw_html = dict_to_html(ai_data)
+    # # --- 第四步：推送到微信公众号草稿箱 ---
+    # print("\n3️⃣ 正在生成公众号排版并推送到草稿箱...")
+    # try:
+    #     # 4.1 将 JSON 字典转成原始 HTML
+    #     raw_html = dict_to_html(ai_data)
         
-        # 4.2 调用美化器注入内联 CSS
-        print("🎨 正在进行排版美化...")
-        styled_content = WeChatStyler.beautify(raw_html)
+    #     # 4.2 调用美化器注入内联 CSS
+    #     print("🎨 正在进行排版美化...")
+    #     styled_content = WeChatStyler.beautify(raw_html)
         
-        # 4.3 最终内容：避免三引号带来的多余换行/缩进
-        final_content = styled_content.strip()
+    #     # 4.3 最终内容：避免三引号带来的多余换行/缩进
+    #     final_content = styled_content.strip()
         
-        # 4.4 上传封面图 (保持不变，确保目录下有 cover.jpg)
-        media_id = wechat_client.upload_cover_image("cover.jpg")
+    #     # 4.4 上传封面图 (保持不变，确保目录下有 cover.jpg)
+    #     media_id = wechat_client.upload_cover_image("cover.jpg")
         
-        # 4.5 新建草稿
-        # 传入 ai_data['daily_summary'] 作为摘要，让微信卡片显示更专业
-        wechat_client.add_draft(
-            title=title, 
-            content=final_content, 
-            thumb_media_id=media_id,
-            digest=ai_data.get('daily_summary')
-        )
+    #     # 4.5 新建草稿
+    #     # 传入 ai_data['daily_summary'] 作为摘要，让微信卡片显示更专业
+    #     wechat_client.add_draft(
+    #         title=title, 
+    #         content=final_content, 
+    #         thumb_media_id=media_id,
+    #         digest=ai_data.get('daily_summary')
+    #     )
         
-    except Exception as e:
-        print(f"❌ 微信公众号推送失败: {e}")
+    # except Exception as e:
+    #     print(f"❌ 微信公众号推送失败: {e}")
 
-    print("\n✅ === 任务全部完成！请去公众号后台查看草稿 === ")
+    print("\n✅ === 任务完成！ === ")
 
 if __name__ == "__main__":
     main()
