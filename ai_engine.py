@@ -18,13 +18,14 @@ API_BASE_URL = "https://api.deepseek.com"
 
 # RSS 数据源列表：已去除国外源，替换为中文高质量科技媒体
 RSS_FEEDS = [
-    {"name": "机器之心", "url": "https://www.jiqizhixin.com/rss"},
-    {"name": "36氪 - AI专栏", "url": "https://rsshub.app/36kr/newsflashes"},
-    {"name": "极客公园", "url": "https://www.geekpark.net/rss"},
-    {"name": "APPSO (爱范儿)", "url": "https://www.ifanr.com/app/feed"},
-    {"name": "AI前线 (InfoQ)", "url": "https://rsshub.app/infoq/topic/131"},
-    # 额外补充一个高质量源，防止部分源临时失效
-    {"name": "钛媒体 - AI专题", "url": "https://rsshub.app/tmtpost/column/234"}
+    # 中文源
+    {"name": "36氪", "url": "https://36kr.com/feed"},
+    {"name": "爱范儿", "url": "https://www.ifanr.com/feed"},
+    {"name": "少数派", "url": "https://sspai.com/feed"},
+    # 英文源（AI 相关）
+    {"name": "Hacker News AI", "url": "https://hnrss.org/newest?q=AI"},
+    {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/"},
+    {"name": "The Verge AI", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"},
 ]
 
 def clean_html(raw_html):

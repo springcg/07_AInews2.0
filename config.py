@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     # 定义需要的配置项
     # 注意：变量名建议与环境变量/ .env 中的键名保持一致（不区分大小写）
     DEEPSEEK_API_KEY: str
-    WECHAT_APPID: str
-    WECHAT_APPSECRET: str
+    WECHAT_APPID: str | None = None
+    WECHAT_APPSECRET: str | None = None
     PUSHPLUS_TOKEN: str
     PUSHPLUS_COVER_URL: str | None = None
     
