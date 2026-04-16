@@ -1,10 +1,11 @@
 import feedparser
 import time
 import html
+import re
 from datetime import datetime, timedelta, timezone
 from concurrent.futures import ThreadPoolExecutor
 from openai import OpenAI
-from config import settings  # 导入你的配置中心
+from config import settings
 import json
 
 # --- 1. 配置区域 ---
@@ -34,7 +35,10 @@ def clean_html(raw_html):
         return ""
     # 解码 HTML 实体 (如 &nbsp; -> 空格)
     text = html.unescape(raw_html)
-    # 简单去除标签（为了保留结构，这里不做得太激进，交给 LLM 理解也可以）
+    # 去除 HTML 标签
+    text = re.sub(r'<[^>]+>', '', text)
+    # 合并多余空白
+    text = re.sub(r'\s+', ' ', text)
     return text.strip()
 
 def fetch_single_feed(feed):
@@ -45,20 +49,20 @@ def fetch_single_feed(feed):
         parsed = feedparser.parse(feed['url'])
         entries = []
         
-        # 获取当前时间（UTC）
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
-        one_day_ago = now - timedelta(hours=24)
+        # 使用 UTC 时间进行统一比较
+        now_utc = datetime.now(timezone.utc)
+        one_day_ago = now_utc - timedelta(hours=24)
 
         for entry in parsed.entries:
-            # 尝试获取发布时间
+            # 尝试获取发布时间（统一转为 UTC aware datetime）
             published_time = None
-            if hasattr(entry, 'published_parsed'):
-                published_time = datetime.fromtimestamp(time.mktime(entry.published_parsed))
-            elif hasattr(entry, 'updated_parsed'):
-                published_time = datetime.fromtimestamp(time.mktime(entry.updated_parsed))
+            time_struct = getattr(entry, 'published_parsed', None) or getattr(entry, 'updated_parsed', None)
+            if time_struct:
+                # mktime + fromtimestamp 得到的是本地时间，转为 UTC
+                published_time = datetime.fromtimestamp(
+                    time.mktime(time_struct), tz=timezone.utc
+                )
             
-            # 如果没有时间戳，或者时间在 24 小时以内，则保留
-            # (有些源没有时间戳，默认保留前 3 条以防漏掉)
             if not published_time or published_time > one_day_ago:
                 title = entry.get('title', '无标题')
                 link = entry.get('link', '')
@@ -66,8 +70,8 @@ def fetch_single_feed(feed):
                 
                 entries.append(f"- 来源: {feed['name']}\n  标题: {title}\n  链接: {link}\n  摘要: {summary}\n")
                 
-                # 每个源最多取前 5 条，防止单个源刷屏
-                if len(entries) >= 10:
+                # 每个源最多取 5 条，控制总量和 Token 消耗
+                if len(entries) >= 5:
                     break
         return entries
     except Exception as e:
@@ -121,18 +125,33 @@ def summarize_with_ai(content):
             model=MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
-            # 如果是 DeepSeek 或 OpenAI 较新模型，建议开启 json_object 模式
             response_format={"type": "json_object"}, 
-            stream=False
+            stream=False,
+            timeout=60  # 60 秒超时
         )
         
-        # 解析返回的 JSON 字符串为 Python 字典
         raw_json = response.choices[0].message.content
         return json.loads(raw_json)
         
-    except Exception as e:
-        print(f"❌ 调用 DeepSeek 失败或 JSON 解析错误: {e}")
+    except json.JSONDecodeError as e:
+        print(f"❌ JSON 解析错误: {e}")
         return None
+    except Exception as e:
+        print(f"⚠️ 第一次调用失败: {e}，正在重试...")
+        try:
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                response_format={"type": "json_object"},
+                stream=False,
+                timeout=60
+            )
+            raw_json = response.choices[0].message.content
+            return json.loads(raw_json)
+        except Exception as retry_e:
+            print(f"❌ 重试仍然失败: {retry_e}")
+            return None
 
 # --- 主函数用于测试 ---
 if __name__ == "__main__":
