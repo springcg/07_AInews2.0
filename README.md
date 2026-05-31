@@ -1,6 +1,8 @@
 ## AI 每日新闻机器人 (v2.0)
 
 一个每天自动抓取多源 AI 相关 RSS、用 DeepSeek 总结，并推送到 PushPlus 和微信公众号草稿箱的脚本。
+<img width="1080" height="2400" alt="image" src="https://github.com/user-attachments/assets/825a2320-a300-4f54-81a1-efc5fb64a4c7" />
+
 
 ### 一、环境准备
 
